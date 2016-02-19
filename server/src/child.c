@@ -1,7 +1,8 @@
 #include "head.h"
 
 
-void make_child(pchild cptr, int n){
+void make_child(pchild cptr, int n)
+{
 	int i;
 	int fds[2];
 	int ret;
@@ -23,7 +24,7 @@ void make_child(pchild cptr, int n){
 
 		close(fds[0]);
 		cptr[i].pid = pid;
-		cptr[i].fds = fds[i];
+		cptr[i].fds = fds[1];
 		cptr[i].busy = 0;
 	}
 }
@@ -60,7 +61,7 @@ void send_file(int sfd)
 		return;
 	}
 
-	while(bzero(&buf, sizeof(buf)),(buf.len = read(fd, buf.buf, sizeof(buf.buf))>0))
+	while(bzero(&buf, sizeof(buf)),(buf.len = read(fd, buf.buf, sizeof(buf.buf)))>0)
 	{
 		send_n(sfd, (char*)&buf, buf.len+4);	
 	}

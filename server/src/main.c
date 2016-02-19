@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
 	}
 
 	int i;
+	printf("m is %d ", num);
 	for(i=0; i<num; i++)
 	{
 		ev.events = EPOLLIN;
@@ -74,37 +75,37 @@ int main(int argc, char* argv[])
 		ret = epoll_wait(epfd, evs, num+1, -1);
 		if(ret>0)
 		{
-			if(evs[i].data.fd ==sfd && evs[i].events == EPOLLIN)
+			for(i=0; i<ret; i++)
 			{
-				new_fd = accept(sfd, NULL, NULL);
-				if(-1==new_fd)
+				if(evs[i].data.fd ==sfd && evs[i].events == EPOLLIN)
 				{
-					perror("accept");
-					return -1;
-				}
-				printf("one client connect, new_fd is %d\n", new_fd);
-				for(j=0; j<num; j++)
-				{
-					if(cptr[j].busy == 0)
+					new_fd = accept(sfd, NULL, NULL);
+					if(-1==new_fd)
 					{
-						break;
+						perror("accept");
+						return -1;
 					}
-				}
-				if(j !=num )
-				{
-					send_fd(cptr[j].fds, new_fd);
-					cptr[j].busy = 1;
-					printf("child %d is busy\n", j);
-				}
-
-				for(j=0; j<num; j++)
-				{
-					if(evs[i].data.fd == cptr[j].fds && evs[i].events == EPOLLIN)
+					printf("one client connect, new_fd is %d\n", new_fd);
+					for(j=0; j<num; j++)
 					{
-						size = read(cptr[j].fds, &flag, 4);
-						printf("the size is %d\n", size);
-						cptr[j].busy=0;
-						printf("child %d is not busy\n", j);
+						if(cptr[j].busy == 0)
+						{
+							break;
+						}
+					}
+					if(j !=num )
+					{
+						send_fd(cptr[j].fds, new_fd);
+						cptr[j].busy = 1;
+					}
+
+					for(j=0; j<num; j++)
+					{
+						if(evs[i].data.fd == cptr[j].fds && evs[i].events == EPOLLIN)
+						{
+							size = read(cptr[j].fds, &flag, 4);
+							cptr[j].busy=0;
+						}
 					}
 				}
 			}

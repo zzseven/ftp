@@ -1,5 +1,3 @@
-#ifndef __HEAD__
-#define __HEAD__
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <strings.h>
@@ -14,7 +12,6 @@
 #include <string.h>
 #include <pthread.h>
 #define DOWN_FILE "file"
-#endif
 
 typedef struct pro_child{
 	pid_t pid;
@@ -25,7 +22,7 @@ typedef struct pro_child{
 
 typedef struct tdata{
 	int len;
-	char buf[100];
+	char buf[1000];
 }data_t, *pdata_t;
 
 void make_child(pchild, int);
