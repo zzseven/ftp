@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 						size = read(cptr[j].fds, &flag, 4);
 						printf("the size is %d\n", size);
 						cptr[j].busy=0;
-						printf("child %d is not busy\n");
+						printf("child %d is not busy\n", j);
 					}
 				}
 			}

@@ -35,12 +35,41 @@ void child_handle(int fdr)
 	while(1)
 	{
 		recv_fd(fdr, &fd);
-		//send_file(fd);
+		send_file(fd);
 		write(fdr, &flag, 4);
 	}
 }
 
-send_file(int fd)
+void send_file(int sfd)
 {
-	;
+	int ret;
+	data_t buf;
+	buf.len = strlen(DOWN_FILE);
+	strcpy(buf.buf, DOWN_FILE);
+	ret = send(sfd, &buf, buf.len+4, 0);
+	if(-1 == ret)
+	{
+		perror("send1");	
+		return;
+	}
+
+	int fd=open(DOWN_FILE, O_RDONLY);
+	if(-1 == fd)
+	{
+		perror("open");
+		return;
+	}
+
+	while(bzero(&buf, sizeof(buf)),(buf.len = read(fd, buf.buf, sizeof(buf.buf))>0))
+	{
+		send_n(sfd, (char*)&buf, buf.len+4);	
+	}
+
+	bzero(&buf, sizeof(buf));
+	int flag = 0;
+	buf.len = sizeof(int);
+	memcpy(buf.buf, &flag, 4);
+	send(sfd, &buf, buf.len+4, 0);
+	close(sfd);
+	return ;
 }
