@@ -1,5 +1,6 @@
 #include "head.h"
 
+
 void make_child(pchild cptr, int n){
 	int i;
 	int fds[2];
