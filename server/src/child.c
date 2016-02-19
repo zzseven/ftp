@@ -19,6 +19,7 @@ void make_child(pchild cptr, int n){
 			close(fds[1]);
 			child_handle(fds[0]);
 		}
+
 		close(fds[0]);
 		cptr[i].pid = pid;
 		cptr[i].fds = fds[i];
