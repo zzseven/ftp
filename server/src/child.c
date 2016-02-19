@@ -39,4 +39,7 @@ void child_handle(int fdr)
 	}
 }
 
-send_file(int fd);
+send_file(int fd)
+{
+	;
+}
