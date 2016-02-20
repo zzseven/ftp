@@ -1,65 +1,24 @@
-#include "head.h"
+#include "func.h"
 
 
-void make_child(pchild cptr, int n)
-{
-	int i;
-	int fds[2];
-	int ret;
-	int pid;
-	for(i=0; i<n; i++)
-	{
-		ret = socketpair(AF_LOCAL, SOCK_STREAM, 0, fds);
-		if(-1 == ret)
-		{
-			perror("socketpair");
-			return;
-		}
-		pid = fork();
-		if(pid==0)
-		{
-			close(fds[1]);
-			child_handle(fds[0]);
-		}
-
-		close(fds[0]);
-		cptr[i].pid = pid;
-		cptr[i].fds = fds[1];
-		cptr[i].busy = 0;
-	}
-}
-
-void child_handle(int fdr)
-{
-	int fd;
-	int flag = 1;
-	while(1)
-	{
-		recv_fd(fdr, &fd);
-		recv_file(fd);
-		//send_file(fd);
-		write(fdr, &flag, 4);
-	}
-}
-
-void send_file(int sfd)
+int send_file(int sfd)
 {
 	int ret;
 	data_t buf;
-	buf.len = strlen(DOWN_FILE);
-	strcpy(buf.buf, DOWN_FILE);
+	buf.len = strlen("file");
+	strcpy(buf.buf, "file");
 	ret = send(sfd, &buf, buf.len+4, 0);
 	if(-1 == ret)
 	{
 		perror("send1");	
-		return;
+		return -1;
 	}
 
-	int fd=open(DOWN_FILE, O_RDONLY);
+	int fd=open("file", O_RDONLY);
 	if(-1 == fd)
 	{
 		perror("open");
-		return;
+		return -1;
 	}
 
 	while(bzero(&buf, sizeof(buf)),(buf.len = read(fd, buf.buf, sizeof(buf.buf)))>0)
@@ -73,7 +32,7 @@ void send_file(int sfd)
 	memcpy(buf.buf, &flag, 4);
 	send(sfd, &buf, buf.len+4, 0);
 	close(sfd);
-	return ;
+	return -1;
 }
 
 
@@ -130,4 +89,18 @@ int recv_file(int sfd)
 		}
 	}
 }
+
+
+void send_n(int sfd, char *p, int len)
+{
+	int total = 0;
+	int size = 0;
+	while(total < len)
+	{
+		size = send(sfd, p+total, len-total, 0);
+		total = total + size;
+	}
+}
+
+
 

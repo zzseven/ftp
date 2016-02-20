@@ -28,6 +28,7 @@ typedef struct tdata{
 void make_child(pchild, int);
 void child_handle(int);
 void send_file(int);
+int  recv_file(int);
 void send_fd(int, int);
 void recv_fd(int, int*);
 void send_n(int, char*, int);

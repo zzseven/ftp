@@ -19,3 +19,6 @@ typedef struct tdata{
 	char buf[1000];
 }data_t, *pdata_t;
 
+int recv_file(int sfd);
+int send_file(int sfd);
+void send_n(int sfd, char* p, int len);
