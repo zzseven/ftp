@@ -79,6 +79,16 @@ int main(int argc, char* argv[])
 					{
 						printf("sss %d\n", size);
 						puts(buf);
+						if(!strcmp(buf, "hello"))
+						{
+							send(sfd, "hi", 2, 0);
+							recv_file(sfd);
+						}else if(!strcmp(buf, "world"))
+						{
+							send(sfd, "ok", 2, 0);
+							send_file(sfd);
+							printf("ok\n");
+						}
 					}
 					else
 					{

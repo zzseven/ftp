@@ -59,6 +59,7 @@ void dispose_accident(int sfd)
 	char home[256];
 	char strls[100];
 	char rep[1000];
+	char hello[10];
 	int dirtest;
 	if(!strcmp(getlogin(),"root"))
 	{
@@ -77,6 +78,7 @@ void dispose_accident(int sfd)
 		bzero(buf1, sizeof(buf1));
 		bzero(buf2, sizeof(buf2));
 		bzero(strls, sizeof(strls));
+		bzero(rep, sizeof(rep));
 		size = recv(sfd, buf, sizeof(buf), 0);
 		if(size > 0)
 		{
@@ -101,12 +103,23 @@ void dispose_accident(int sfd)
 					send(sfd, rep, strlen(rep), 0);
 				}else if(!strcmp("ls", buf1))
 				{	
-					if(buf2[0]!='/')
-						sprintf(strls,"%s/%s", laddr.cur_addr, buf2);
-					else
-						sprintf(strls, "%s", buf2);
-
-					printdir(strls, rep);
+					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
+					strcpy(cpladdr.cur_addr, laddr.cur_addr);
+					cpladdr.leavel = laddr.leavel;
+					if(islegaladdr(buf2))
+					{
+						ret = mychdir(&cpladdr, buf2, home);
+					}else
+					{
+						ret = 0;		
+					}
+					if(ret)
+					{
+						printdir(cpladdr.cur_addr, rep);
+					}else
+					{
+						sprintf(rep,"Can't open directory: %s", buf2);
+					}
 					send(sfd, rep, strlen(rep), 0);
 				}else if(!strcmp("cd", buf1) && (!strcmp("~", buf2) || !strcmp("",buf2)))
 				{
@@ -116,16 +129,14 @@ void dispose_accident(int sfd)
 				}
 				else if(!strcmp("cd", buf1))
 				{
-					
+					cpladdr.leavel = laddr.leavel;
 					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
 					strcpy(cpladdr.cur_addr, laddr.cur_addr);
-					printf("start %d \n", cpladdr.leavel);
 					if(islegaladdr(buf2))
 					{
 						ret = mychdir(&cpladdr, buf2, home);
 					}else
 					{
-						printf("hhhhhh\n");
 						ret = 0;		
 					}
 					if(ret)
@@ -139,6 +150,70 @@ void dispose_accident(int sfd)
 						send(sfd, "That is not a directory or you can't access!", 44, 0);
 					}
 
+				}else if(!strcmp("get", buf1) && strcmp("",buf2))
+				{
+					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
+					strcpy(cpladdr.cur_addr, laddr.cur_addr);
+					cpladdr.leavel = laddr.leavel;
+					if(islegalfl(buf2))
+					{
+						ret = flchdir(&cpladdr, buf2, home);
+					}else
+					{
+						ret = 0;		
+					}
+					if(ret)
+					{
+						//printdir(cpladdr.cur_addr, rep);
+						//puts(cpladdr.cur_addr);
+						//puts(buf2);
+						send(sfd, "hello", 5, 0);
+						bzero(hello, sizeof(hello));
+						recv(sfd, hello, sizeof(hello), 0);
+						
+						send_file(sfd, cpladdr.cur_addr, buf2);
+
+					}else
+					{
+						sprintf(rep,"Can't open directory: %s", buf2);
+					}
+				}else if(!strcmp("puts", buf1) && strcmp("", buf2))
+				{
+					char filename[100];
+					bzero(filename, 100);
+					get_filename(buf2, filename);
+					puts(filename);
+					send(sfd, "world", 5, 0);
+					recv(sfd, hello, sizeof(hello), 0);
+					puts(buf2);	
+					send(sfd, buf2, strlen(buf2), 0);
+					bzero(strls, sizeof(strls));
+					sprintf(strls,"%s/%s", home, filename);
+					puts(strls);
+					recv_file(sfd, strls);
+				}else if(!strcmp("remove", buf1) && strcmp("", buf2))
+				{
+					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
+					strcpy(cpladdr.cur_addr, laddr.cur_addr);
+					cpladdr.leavel = laddr.leavel;
+					if(islegalfl(buf2))
+					{
+						ret = flchdir(&cpladdr, buf2, home);
+					}else
+					{
+						ret = 0;		
+					}
+					if(ret)
+					{
+						if((remove(cpladdr.cur_addr)==0))
+						{
+							sprintf(rep, "%s removed!", buf2);
+						}
+					}else
+					{
+						sprintf(rep,"Can't find: %s", buf2);
+					}
+					send(sfd, rep, strlen(rep), 0);	
 				}
 			}
 		}
@@ -195,12 +270,13 @@ int string_handle(char* buf, char* buf1, char* buf2)
 
 
 
-void send_file(int sfd)
+void send_file(int sfd, char* path, char* filename)
 {
+	printf("start!\n");
 	int ret;
 	data_t buf;
-	buf.len = strlen(DOWN_FILE);
-	strcpy(buf.buf, DOWN_FILE);
+	buf.len = strlen(filename);
+	strcpy(buf.buf, filename);
 	ret = send(sfd, &buf, buf.len+4, 0);
 	if(-1 == ret)
 	{
@@ -208,7 +284,7 @@ void send_file(int sfd)
 		return;
 	}
 
-	int fd=open(DOWN_FILE, O_RDONLY);
+	int fd=open(path, O_RDONLY);
 	if(-1 == fd)
 	{
 		perror("open");
@@ -225,25 +301,27 @@ void send_file(int sfd)
 	buf.len = sizeof(int);
 	memcpy(buf.buf, &flag, 4);
 	send(sfd, &buf, buf.len+4, 0);
-	close(sfd);
+	//close(sfd);
 	return ;
+	printf("over!\n");
 }
 
 
-int recv_file(int sfd)
+int recv_file(int sfd, char *path)
 {	
 	int len;
 	int ret;
 	data_t buf;
-	bzero(&buf, sizeof(buf));
-	ret = recv(sfd, &buf.len, 4, 0);
-	if(-1 == ret)
-	{
-		perror("recv1");
-		return -1;
-	}
+	//bzero(&buf, sizeof(buf));
+	//ret = recv(sfd, &buf.len, 4, 0);
+	//if(-1 == ret)
+	//{
+	//	perror("recv1");
+	//	return -1;
+	//}
 
-	recv(sfd, buf.buf, buf.len, 0);
+	//recv(sfd, buf.buf, buf.len, 0);
+	strcpy(buf.buf, path);
 	int fd;
 	fd = open(buf.buf, O_RDWR|O_CREAT, 0666);
 	if(-1 == fd)
@@ -319,3 +397,51 @@ int islegaladdr(char *buf2)
 	}
 	return 1;
 }
+int islegalfl(char *buf2)
+{
+	int i=0;
+	while(buf2[i]!='\0')
+	{
+		if(buf2[i]=='.' )
+		{
+			if( buf2[i+1]=='.')
+			{
+				if(buf2[i+2] != '/' && buf2[i+2] != '\0')
+				{
+					return 0;
+				}
+			}
+		}else if(buf2[i] == '~')
+		{
+			if(buf2[i+1]!='/' && buf2[i+1] != '\0')
+			{
+				return 0;
+			}
+		}else if(buf2[i] == '/')
+		{
+			if(buf2[i+1] == '/')
+			{
+				return 0;
+			}
+		}
+		i++;
+	}
+	return 1;
+}
+
+void get_filename(char *buf2,char *filename)
+{
+	int i = 0;
+	int j = 0;
+	while(buf2[i]!='\0')
+	{
+		j = 0;
+		while(buf2[i]!='/' && buf2[i]!='\0')
+		{
+			filename[j++] = buf2[i++];
+		}
+		i++;
+	}
+	filename[j]='\0';
+}
+

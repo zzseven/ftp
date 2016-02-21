@@ -37,8 +37,8 @@ typedef struct addr{
 
 void make_child(pchild, int);
 void child_handle(int);
-void send_file(int);
-int  recv_file(int);
+void send_file(int sfd, char * path, char * filename);
+int  recv_file(int sfd, char *path);
 void send_fd(int, int);
 void recv_fd(int, int*);
 void send_n(int, char*, int);
@@ -49,13 +49,10 @@ char * strdispose(char * str, int f, int l);
 void findmod(char mod[], int num);
 void ls_al(char *cur_addr, char *rep);
 int mychdir(pmy_addr laddr, char *buf2, char *home);
+int flchdir(pmy_addr laddr, char *buf2, char *home);
 int islegaladdr(char *buf2);
-
-
-
-
-
-
+int islegalfl(char *buf2);
+void get_filename(char *buf2, char *filename);
 
 
 
