@@ -1,5 +1,5 @@
 ELF:=../bin/server
-OBJ:=main.c child.c pool_n.c send_fd.c
+OBJ:=main.c child.c pool_n.c send_fd.c printdir.c ls-al.c mycd.c
 $(ELF):$(OBJ)
 	gcc $^ -o $@ -I../include 
 

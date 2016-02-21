@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
 	}
 
 	int i;
-	printf("m is %d ", num);
 	for(i=0; i<num; i++)
 	{
 		ev.events = EPOLLIN;
