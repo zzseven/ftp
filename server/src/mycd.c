@@ -72,7 +72,7 @@ int mychdir(pmy_addr laddr,  char *buf2, char * home)
 	stat(laddr->cur_addr, &info);
 	if(S_ISDIR(info.st_mode))
 	{
-		puts(laddr->cur_addr);
+		//puts(laddr->cur_addr);
 		laddr->leavel = leavel;
 		return 1;
 	}else

@@ -1,7 +1,7 @@
 #include "head.h"
 
 
-void make_child(pchild cptr, int n)
+void make_child(pchild cptr, int n)  //创建子进程
 {
 	int i;
 	int fds[2];
@@ -29,23 +29,21 @@ void make_child(pchild cptr, int n)
 	}
 }
 
-void child_handle(int fdr)
+void child_handle(int fdr)  //子进程对客户端进行监控
 {
 	int fd;
 	int flag = 1;
 	while(1)
 	{
 		recv_fd(fdr, &fd);
-		//dispose accident
-		dispose_accident(fd);
-		//recv_file(fd);
-		//send_file(fd);
-		//write(fdr, &flag, 4);
+		send(fd, "Hello, welcome!", 15, 0);
+		dispose_accident(fd);   //子进程对客户端发来的请求进行处理
+		write(fdr, &flag, 4);    //客户端退出，进程空闲
 	}
 }
 
 
-void dispose_accident(int sfd)
+void dispose_accident(int sfd)	 // 子进程对客户端请求处理函数
 {
 	int size;
 	int flag;
@@ -56,7 +54,7 @@ void dispose_accident(int sfd)
 	my_addr cpladdr;
 	laddr.leavel = 0;
 	cpladdr.leavel = laddr.leavel;
-	char home[256];
+	char home[256];          //保存server 主目录
 	char strls[100];
 	char rep[1000];
 	char hello[10];
@@ -86,22 +84,24 @@ void dispose_accident(int sfd)
 			if(ret == -1)
 			{
 				send(sfd, "Illegal request!\n", 17, 0);
-				//send(sfd, buf, strlen(buf), 0);
 			}
 			else
 			{
-				if(!strcmp("pwd",buf1))
+				if(!strcmp("pwd",buf1))  //pwd
 				{
 					send(sfd, laddr.cur_addr, strlen(laddr.cur_addr), 0);
-				}else if(!strcmp("ls", buf1) && (!strcmp("-a", buf2) || strlen(buf2)==0))
+
+				}else if(!strcmp("ls", buf1) && (!strcmp("-a", buf2) || strlen(buf2)==0)) // ls -a
 				{
-					printdir(laddr.cur_addr, rep);
+					printdir(laddr.cur_addr, rep);  
 					send(sfd, rep, strlen(rep), 0);
-				}else if(!strcmp("ls", buf1) && (!strcmp("-l", buf2) || !strcmp("-la", buf2) || !strcmp("-al", buf2)))
+
+				}else if(!strcmp("ls", buf1) && (!strcmp("-l", buf2) || !strcmp("-la", buf2) || !strcmp("-al", buf2))) // ls -la
 				{
 					ls_al(laddr.cur_addr, rep);
 					send(sfd, rep, strlen(rep), 0);
-				}else if(!strcmp("ls", buf1))
+
+				}else if(!strcmp("ls", buf1))   // ls **/**/
 				{	
 					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
 					strcpy(cpladdr.cur_addr, laddr.cur_addr);
@@ -121,13 +121,14 @@ void dispose_accident(int sfd)
 						sprintf(rep,"Can't open directory: %s", buf2);
 					}
 					send(sfd, rep, strlen(rep), 0);
-				}else if(!strcmp("cd", buf1) && (!strcmp("~", buf2) || !strcmp("",buf2)))
+
+				}else if(!strcmp("cd", buf1) && (!strcmp("~", buf2) || !strcmp("",buf2)))  // cd ~  || cd 
 				{
 					laddr.leavel = 0;
 					strcpy(laddr.cur_addr, home);
 					send(sfd, laddr.cur_addr, strlen(laddr.cur_addr), 0);
-				}
-				else if(!strcmp("cd", buf1))
+
+				}else if(!strcmp("cd", buf1))  //cd **/**/
 				{
 					cpladdr.leavel = laddr.leavel;
 					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
@@ -150,7 +151,7 @@ void dispose_accident(int sfd)
 						send(sfd, "That is not a directory or you can't access!", 44, 0);
 					}
 
-				}else if(!strcmp("get", buf1) && strcmp("",buf2))
+				}else if(!strcmp("get", buf1) && strcmp("",buf2))  //get  **/**/file
 				{
 					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
 					strcpy(cpladdr.cur_addr, laddr.cur_addr);
@@ -164,34 +165,31 @@ void dispose_accident(int sfd)
 					}
 					if(ret)
 					{
-						//printdir(cpladdr.cur_addr, rep);
-						//puts(cpladdr.cur_addr);
-						//puts(buf2);
 						send(sfd, "hello", 5, 0);
 						bzero(hello, sizeof(hello));
 						recv(sfd, hello, sizeof(hello), 0);
 						
 						send_file(sfd, cpladdr.cur_addr, buf2);
-
 					}else
 					{
 						sprintf(rep,"Can't open directory: %s", buf2);
 					}
-				}else if(!strcmp("puts", buf1) && strcmp("", buf2))
+
+				}else if(!strcmp("puts", buf1) && strcmp("", buf2))  // puts **/**/file
 				{
 					char filename[100];
 					bzero(filename, 100);
 					get_filename(buf2, filename);
-					puts(filename);
+					//puts(filename);
 					send(sfd, "world", 5, 0);
 					recv(sfd, hello, sizeof(hello), 0);
-					puts(buf2);	
+					//puts(buf2);	
 					send(sfd, buf2, strlen(buf2), 0);
 					bzero(strls, sizeof(strls));
 					sprintf(strls,"%s/%s", home, filename);
-					puts(strls);
+					//puts(strls);
 					recv_file(sfd, strls);
-				}else if(!strcmp("remove", buf1) && strcmp("", buf2))
+				}else if(!strcmp("remove", buf1) && strcmp("", buf2))  // remove **/file
 				{
 					bzero(cpladdr.cur_addr, sizeof(cpladdr.cur_addr));
 					strcpy(cpladdr.cur_addr, laddr.cur_addr);
@@ -213,7 +211,12 @@ void dispose_accident(int sfd)
 					{
 						sprintf(rep,"Can't find: %s", buf2);
 					}
-					send(sfd, rep, strlen(rep), 0);	
+					send(sfd, rep, strlen(rep), 0);
+
+				}else if(!strcmp("bye", buf1) && strlen(buf2)==0)
+				{
+					send(sfd, "bye", 3, 0);
+					break;
 				}
 			}
 		}
@@ -272,7 +275,6 @@ int string_handle(char* buf, char* buf1, char* buf2)
 
 void send_file(int sfd, char* path, char* filename)
 {
-	printf("start!\n");
 	int ret;
 	data_t buf;
 	buf.len = strlen(filename);
@@ -301,9 +303,7 @@ void send_file(int sfd, char* path, char* filename)
 	buf.len = sizeof(int);
 	memcpy(buf.buf, &flag, 4);
 	send(sfd, &buf, buf.len+4, 0);
-	//close(sfd);
 	return ;
-	printf("over!\n");
 }
 
 

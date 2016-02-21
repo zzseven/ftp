@@ -8,7 +8,7 @@ int send_file(int sfd)
 	char fileinfor[100];
 	bzero(fileinfor, 100);
 	recv(sfd, fileinfor, sizeof(fileinfor), 0);
-	puts(fileinfor);
+	//puts(fileinfor);
 	//buf.len = strlen("file");
 	//strcpy(buf.buf, "file");
 	//ret = send(sfd, &buf, buf.len+4, 0);
@@ -36,12 +36,12 @@ int send_file(int sfd)
 	memcpy(buf.buf, &flag, 4);
 	send(sfd, &buf, buf.len+4, 0);
 	
+	printf("send over!\n");
 }
 
 
 int recv_file(int sfd)
 {
-	printf("recv:\n");
 	int len;
 	int ret;
 	data_t buf;
@@ -92,7 +92,7 @@ int recv_file(int sfd)
 			return -1;
 		}
 	}
-	printf("over!\n");
+	printf(" received the file!\n");
 }
 
 

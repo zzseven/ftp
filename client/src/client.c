@@ -28,7 +28,8 @@ int main(int argc, char* argv[])
 		perror("connect");
 		return -1;
 	}
-	printf("connect success\n");
+	//printf("connect success\n");
+	system("clear");
 	//cereate epoll
 
 	int epfd;
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
 	int i;
 	int size;
 	int flag;
+	
 	char buf[4096];
 	while(1)
 	{
@@ -77,8 +79,7 @@ int main(int argc, char* argv[])
 					size = recv(sfd, buf, sizeof(buf), 0);
 					if(size > 0)
 					{
-						printf("sss %d\n", size);
-						puts(buf);
+						//puts(buf);
 						if(!strcmp(buf, "hello"))
 						{
 							send(sfd, "hi", 2, 0);
@@ -87,7 +88,13 @@ int main(int argc, char* argv[])
 						{
 							send(sfd, "ok", 2, 0);
 							send_file(sfd);
-							printf("ok\n");
+						}else if(!strcmp(buf, "bye"))
+						{
+							return 0;
+						}else
+						{
+							//system("clear");
+							puts(buf);
 						}
 					}
 					else
