@@ -66,19 +66,8 @@ int recv_file(int sfd)
 	while(1)
 	{
 		bzero(&buf,sizeof(buf));
-		ret = recv(sfd, &buf.len, 4, 0);
-		if(-1 == ret)
-		{
-			perror("recv2");
-			return -1;
-		}
-		
-		ret = recv(sfd, buf.buf, buf.len, 0);
-		if(-1 == ret)
-		{
-			perror("recv3");
-			return -1;
-		}
+		ret = recv_n(sfd, (char*)&buf.len, 4);
+		ret = recv_n(sfd, buf.buf, buf.len);
 
 		if((buf.len == 4) && !memcmp(buf.buf, &flag, 4))
 		{
@@ -96,6 +85,8 @@ int recv_file(int sfd)
 }
 
 
+
+
 void send_n(int sfd, char *p, int len)
 {
 	int total = 0;
@@ -107,5 +98,16 @@ void send_n(int sfd, char *p, int len)
 	}
 }
 
+
+void recv_n(int sfd, char *p, int len)
+{
+	int total = 0;
+	int size = 0;
+	while(total < len)
+	{
+		size = recv(sfd, p+total, len-total, 0);
+		total = total + size;
+	}
+}
 
 

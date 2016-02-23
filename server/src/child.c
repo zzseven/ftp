@@ -334,19 +334,8 @@ int recv_file(int sfd, char *path)
 	while(1)
 	{
 		bzero(&buf,sizeof(buf));
-		ret = recv(sfd, &buf.len, 4, 0);
-		if(-1 == ret)
-		{
-			perror("recv2");
-			return -1;
-		}
-		
-		ret = recv(sfd, buf.buf, buf.len, 0);
-		if(-1 == ret)
-		{
-			perror("recv3");
-			return -1;
-		}
+		recv_n(sfd, (char*)&buf.len, 4);
+		recv_n(sfd, buf.buf, buf.len);
 
 		if((buf.len == 4) && !memcmp(buf.buf, &flag, 4))
 		{

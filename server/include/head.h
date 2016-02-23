@@ -42,6 +42,7 @@ int  recv_file(int sfd, char *path);
 void send_fd(int, int);
 void recv_fd(int, int*);
 void send_n(int, char*, int);
+void recv_n(int, char*, int);
 void dispose_accident(int sfd);
 int string_handle(char* buf, char* buf1, char* buf2);
 void printdir(char *dir, char *rep);

@@ -22,3 +22,4 @@ typedef struct tdata{
 int recv_file(int sfd);
 int send_file(int sfd);
 void send_n(int sfd, char* p, int len);
+void recv_n(sfd, char*, int);
