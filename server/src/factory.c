@@ -47,12 +47,23 @@ void send_file(int sfd) //其中的一个交互程序
 		perror("send1");
 		return;
 	}
+	
+	struct stat file;
 	int fd=open(DOWN_FILE,O_RDONLY);
 	if(-1==fd)
 	{
 		perror("open");
 		return;
 	}
+	ret  = fstat(fd, &file);
+	if(ret == -1)
+	{
+		perror("fstat error");
+		exit(-1);
+	}
+
+	ret = send(sfd,&file.st_size,8,0);//发送文件大小
+
 	while(1)
 	{
 		bzero(&buf,sizeof(buf));
