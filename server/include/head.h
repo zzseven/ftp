@@ -1,6 +1,7 @@
 /*定义需要的头文件*/
 #ifndef __HEAD__
 #define __HEAD__
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
