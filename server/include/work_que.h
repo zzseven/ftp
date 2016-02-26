@@ -9,7 +9,7 @@ typedef struct node_fd{      //链表节点
 
 typedef struct tdata{
 	int len;
-	char buf[1000];
+	char buf[524288];
 }data_t,*pdata_t;
 
 typedef struct que_fd{       //队列结构体，保存着队列信息

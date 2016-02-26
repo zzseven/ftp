@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
 				pnew->new_fd = new_fd;
 				printf("%d\n", new_fd);
 				factory_que_set(&tf.fd_que, pnew);
+				printf("sdfffffsfffffffffffff\n");
 				pthread_cond_signal(&tf.cond);
 			}
 		}
@@ -77,7 +78,9 @@ void* thread_handle(void* arg)
 		pthread_mutex_unlock(&pq->mutex);
 	}
 	factory_que_get(pq, &pcur);
+	printf("got new_fd\n");
 	send_file(pcur->new_fd);
+	//close(pcur->new_fd);
 	free(pcur);
 	//action
 }

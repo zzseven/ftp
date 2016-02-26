@@ -49,12 +49,15 @@ void send_file(int sfd) //其中的一个交互程序
 	}
 	
 	struct stat file;
+	printf("sdfssssssssssssssss\n");
 	int fd=open(DOWN_FILE,O_RDONLY);
 	if(-1==fd)
 	{
-		perror("open");
+		perror("open1");
+		printf("%s\n", DOWN_FILE);
 		return;
 	}
+	printf("Ok\n");
 	ret  = fstat(fd, &file);
 	if(ret == -1)
 	{
@@ -79,7 +82,7 @@ void send_file(int sfd) //其中的一个交互程序
 	buf.len=sizeof(int);
 	memcpy(buf.buf,&flag,4);
 	send(sfd,&buf, buf.len+4,0);//发送结束符	
-	//close(sfd);
+	close(sfd);
 	return;
 }
 

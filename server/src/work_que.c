@@ -39,6 +39,7 @@ void factory_que_get(pque_t pq, pnode* pcur)
 		*pcur = pq->que_head;
 		pq->que_head = (*pcur)->pnext;
 		pq->size--;
+		printf("pq->size : %d\n", pq->size);
 	}
 	pthread_mutex_unlock(&pq->mutex);
 }

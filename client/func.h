@@ -15,6 +15,15 @@
 
 typedef struct tdata{
 	int len;
-	char buf[1000];
+	char buf[524288];
 }data_t,*pdata_t;
+
+typedef struct threadt{
+	pthread_t  pth;
+	char filename[50];
+	long int filesize;
+	long int recvsize;
+}thrnode, *pthrnode;
+
 void recv_n(int , char *, int);
+void * threadfunc(void *(arg));

@@ -2,7 +2,6 @@
 
 void recv_n(int sfd,char* p,int len)
 {
-	printf("%d\n", len);
 
 	int total=0;
 	int size=0;
