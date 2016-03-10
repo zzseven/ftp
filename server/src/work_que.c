@@ -20,26 +20,35 @@ void factory_que_set(pque_t pq, pnode pnew)
 	pthread_mutex_lock(&pq->mutex);
 	if(pq->que_tail == NULL)
 	{
+		printf("que ->null \n ");
 		pq->que_head = pnew;
 		pq->que_tail = pnew;
+		pnew->pnext = NULL;
 	}else
 	{
+		printf("que not null \n ");
 		(pq->que_tail)->pnext = pnew;
+		pnew->pnext = NULL;
 		pq->que_tail = pnew;
 	}
-	pq->size ++;
+	pq->size++;
 	pthread_mutex_unlock(&pq->mutex);
 }
 
 void factory_que_get(pque_t pq, pnode* pcur)
 {
 	pthread_mutex_lock(&pq->mutex);
-	if(pq->que_head != NULL)
+	if(pq->que_head != NULL && pq->que_head != pq->que_tail)
 	{
 		*pcur = pq->que_head;
 		pq->que_head = (*pcur)->pnext;
 		pq->size--;
 		printf("pq->size : %d\n", pq->size);
+	}else 
+	{
+		*pcur = pq->que_head;
+		pq->que_head = NULL;
+		pq->que_tail = NULL;
 	}
 	pthread_mutex_unlock(&pq->mutex);
 }

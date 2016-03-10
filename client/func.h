@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -27,3 +28,4 @@ typedef struct threadt{
 
 void recv_n(int , char *, int);
 void * threadfunc(void *(arg));
+int recv_file(int sfd);

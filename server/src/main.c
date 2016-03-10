@@ -79,8 +79,28 @@ void* thread_handle(void* arg)
 	}
 	factory_que_get(pq, &pcur);
 	printf("got new_fd\n");
-	send_file(pcur->new_fd);
-	//close(pcur->new_fd);
+
+	
+	int sfd = pcur->new_fd;
+	int rec = -1;
+	char buf[1000];
+	char buf2[50];
+	while(1)
+	{
+		rec = -1;
+		bzero(buf, 1000);
+		bzero(buf2, 50);
+
+		int ret = recv(sfd, buf, sizeof(buf), 0);
+		sscanf(buf, "%d %s", &rec, buf2);
+		printf("rec = %d\n", rec);
+		if(strlen(buf2)!=0)
+			puts(buf2);
+		send(sfd, buf, strlen(buf), 0);
+	
+	}
+	//send_file(pcur->new_fd);
+	close(pcur->new_fd);
 	free(pcur);
-	//action
+//	action
 }

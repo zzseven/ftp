@@ -1,5 +1,6 @@
 #include "func.h"
 #include <pthread.h>
+#include <unistd.h>
 
 #define NUM 10
 int main(int argc,char* argv[])
@@ -27,8 +28,138 @@ int main(int argc,char* argv[])
 		perror("connect");
 		return -1;
 	}
-	printf("connect success\n");
-	int len;
+	printf("zhielijiagedenglu:");
+	//这里可以加一个提示页面
+	//
+	//连接成功，下面开始做正事！
+	//1.while循环,读取用户输入，对用户输入进行检查
+	//2.逐个命令进行判断，先分析第一个命令
+	//3.对能在本地完成的命令，本地进行操作如clear
+	
+	char input[100];
+	char buf1[50];
+	char buf2[50];
+	char message[100];
+	char recvmess[1000];
+	while(1)
+	{
+		printf("zz'ftp: ");
+		memset(input, 0, 100);	
+		memset(buf1, 0, 50);	
+		memset(buf2, 0, 50);	
+		memset(message, 0, 100);
+		memset(recvmess, 0, 1000);
+		fgets(input, 100, stdin);
+		sscanf(input, "%s %s", buf1, buf2);
+		if(!strcmp(buf1, "pwd") && strlen(buf2)==0)
+		{
+			strcpy(message, "1");
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 1 error! ");
+			}
+			//recv1
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+
+		}
+		else if(!strcmp(buf1, "cd")) 
+		{
+			strcpy(message, "2 ");
+			strcat(message, buf2);
+			puts(message);
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 2 error! ");
+			}
+			//recv2
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+
+		}
+		else if(!strcmp(buf1, "ls"))
+		{
+			strcpy(message, "3 ");
+			strcat(message, buf2);
+
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 3 error! ");
+			}
+			//recv3
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+			
+		}
+		else if(!strcmp(buf1, "get") && strlen(buf2)!=0 )
+		{
+			strcpy(message, "4 ");
+			strcat(message, buf2);
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 1 error! ");
+			}
+			recv_file(sfd);
+			//recv4
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+		}
+		else if(!strcmp(buf1, "send") && strlen(buf2)!=0)
+		{
+			strcpy(message, "5 ");
+			//recv_file(sfd);
+			strcat(message, buf2);
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 1 error! ");
+			}
+			//recv
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+		}
+		else if(!strcmp(buf1, "remove") && strlen(buf2)!=0)
+		{
+			strcpy(message, "6 ");
+			strcat(message, buf2);
+			//recv_file(sfd);
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 1 error! ");
+			}
+			//recv
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+		}
+		else if(!strcmp(buf1, "clear") && strlen(buf2)==0 )
+		{
+			system("clear");
+		}
+		else if(!strcmp(buf1, "exit"))
+		{
+			strcpy(message, "0");
+			ret = send(sfd, message, strlen(message), 0);
+			if(ret == -1)
+			{
+				printf("send message 1 error! ");
+			}
+			//recv
+			ret = recv(sfd, recvmess, sizeof(recvmess), 0);
+			puts(recvmess);
+			break;
+		}
+	}
+}
+	
+//接收文件用的
+int recv_file(int sfd)
+{
+	int len, ret;
 	data_t buf;
 	bzero(&buf,sizeof(buf));
 	ret=recv(sfd,&buf.len,4,0);	
@@ -59,7 +190,6 @@ int main(int argc,char* argv[])
 	int line = 0;
 	printf("\033[?25l");
 	pthread_create(&thr.pth, NULL, threadfunc, (void*)&thr);
-	//printf("recv %s\t  %.0f%%\n", filename, (recvsize*100)/(filesize*1.0));
 	while(1)
 	{	
 		bzero(&buf, sizeof(buf));
@@ -70,12 +200,7 @@ int main(int argc,char* argv[])
 			line = 1;
 		}else
 			thr.recvsize += buf.len;
-		if(!line)
-		{
-//			printf("\033[1A"); //先回到上一行
-//			printf("\033[K");  //清除该行
-//			printf("recv %s\t  %.0f%%\n", filename, (recvsize*100)/(filesize*1.0));
-		}else
+		if(line)
 			break;
 		ret = write(fd, buf.buf, buf.len);
 		if(ret < 0)
@@ -83,14 +208,11 @@ int main(int argc,char* argv[])
 			perror("write");
 			return -1;
 		}
-	//	printf("hhh\n");
-
 	}
 	pthread_join(thr.pth, (void**)&ret);
-	close(sfd);
-
-	return 0;
 }
+
+
 
 void * threadfunc(void *(arg))
 {
@@ -130,4 +252,5 @@ void * threadfunc(void *(arg))
 	}
 	printf("recv %s \t\t %.2f%%\n", thr->filename, ((thr->recvsize)*100)/((thr->filesize)*1.0));
 	sleep(1);
+	printf("\033[?25h");
 }
